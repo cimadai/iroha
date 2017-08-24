@@ -1,41 +1,61 @@
 # How to build `iroha` using docker
 
-Run build script and wait for completion. 
+Clone `iroha.git` on your directory.
+
 ```
-${IROHA_HOME}/docker/build.sh
+git clone https://github.com/hyperledger/iroha.git
+cd iroha
+```
+
+Build depends on the environment variable `IROHA_HOME` so you need to set it:
+
+`export IROHA_HOME=$(pwd)`
+
+Build on docker container for develop environment `hyperledger/iroha-dev` so you need to build it:
+
+```
+cd docker/dev
+docker build -t hyperledger/iroha-dev .
+```
+
+Run build script and wait for completion. 
+
+```bash
+${IROHA_HOME}/docker/build_in_docker.sh
 ``` 
 
- - It builds `hyperledger/iroha-dev` image, which is ubuntu:latest with all dependencies installed.
- - It builds iroha inside that image and copies `iroha.tar` into `${IROHA_HOME}/docker/build/iroha.tar`
- - It creates production-ready docker image with tag `hyperledger/iroha-docker` and copies `iroha.tar` inside it.
+Docker image with tag `hyperledger/iroha-docker:latest` will be built.
 
+# How to run
 
-# Usage example
-
-In order to use iroha, you need to create `config/sumeragi.json` config file in each node (docker container). 
-
-You have two options:
-
- 1. To use [automatic config discovery](./config-discovery/README.md).
- 2. To run iroha containers and setup configs by yourself. To do this, run bash in iroha container:
-```bash
-# run bash instead of default /run.sh
-ID=docker run -it -d hyperledger/iroha-docker bash
-# attach to container
-docker exec -it $ID bash
-# setup config now and then execute /run.sh
 ```
-
-iroha image includes several scripts:
- - `/configure.sh`, which makes attempt to get config file from `configdiscovery` service.
- - `/run.sh`, which runs iroha (it will be successful only if you properly setup `${IROHA_HOME}/config/sumeragi.json` inside a container) .
- - `/configure-then-run.sh`, which runs `configure`, then `run`. 
-
- You can use them instead default `CMD`:
-
-```bash
-docker run -d --name iroha hyperledger/iroha-docker /configure-then-run.sh
+docker run -d --name=iroha -p 50051:50051 hyperledger/iroha-docker:latest
 ```
 
 
-#### Good luck!
+# Troubleshooting
+
+To successfully build docker image, you should be able to build it locally: [follow this guilde](../docs/how_to_build.rst) in case of troubles.
+
+
+# Development environments
+Dev environments aimed to deploy different configurations for development purpose. 
+
+## Ametsuchi
+Start different containers:
+    * node - container for deploy irohad binary and build project 
+    * postgre - container for WSW
+    * redis - container for indexes
+
+For run use:
+```sh
+sh run-ametsuchi-dev.sh
+```
+
+## Consensus
+Currently starts only one container - node, but in future it should deploy also container with ordering service.
+ 
+ For run use:
+```sh
+sh run-consensus-dev.sh
+```
