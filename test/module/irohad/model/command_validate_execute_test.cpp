@@ -406,8 +406,11 @@ class RemoveSignatoryTest : public CommandValidateExecuteTest {
   void SetUp() override {
     CommandValidateExecuteTest::SetUp();
 
-    account_pubkeys = {account.master_key};
-    many_pubkeys = {creator.master_key, account.master_key};
+    ed25519::pubkey_t pubkey1, pubkey2;
+    pubkey1.fill(1);
+    pubkey2.fill(1);
+    account_pubkeys = {pubkey1};
+    many_pubkeys = {pubkey1, pubkey2};
 
     remove_signatory = std::make_shared<RemoveSignatory>();
     remove_signatory->account_id = account_id;
@@ -474,7 +477,7 @@ TEST_F(RemoveSignatoryTest, InvalidWhenNoPermissions) {
 TEST_F(RemoveSignatoryTest, InvalidWhenMasterKey) {
   // Remove master key
   creator.permissions.remove_signatory = true;
-  remove_signatory->pubkey.fil(0xF);
+  remove_signatory->pubkey.fill(0xF);
 
   EXPECT_CALL(*wsv_query, getAccount(remove_signatory->account_id))
       .WillOnce(Return(account));
